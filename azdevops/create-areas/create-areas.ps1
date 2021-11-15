@@ -1,8 +1,9 @@
-# Read encrypted token from a text file
-$EncryptedPersonalAccessToken = Get-Content("credentials.cfg")
+# Specify vault settings
+$VaultName = "VaultName"
+$SecretName = "Secretname"
 
 # Convert encrypted token to SecureString
-$SecurePersonalAccessToken = $EncryptedPersonalAccessToken | ConvertTo-SecureString
+$SecurePersonalAccessToken = (Get-AzKeyVaultSecret -VaultName $VaultName -Name $SecretName).SecretValue
 
 # Read Azure DevOps parameters from a text file
 Get-Content -Path .\params.txt -ReadCount 2 | ForEach-Object {
