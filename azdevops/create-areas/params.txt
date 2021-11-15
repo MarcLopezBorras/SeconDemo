@@ -1,0 +1,2 @@
+OrganizationName=https://dev.azure.com/amadeuscorporations
+ProjectName=DevSecOps%20Playground
