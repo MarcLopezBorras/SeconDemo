@@ -31,7 +31,6 @@ finally
 ### Main:
 foreach ($line in $csv) 
 { 
-Write-Host $line.'Amadeus ID'
         Switch ($line.Action)
         {
 #add user to azure
