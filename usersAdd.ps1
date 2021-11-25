@@ -11,7 +11,7 @@ $AzureDevOpsAuthenicationHeader = @{Authorization = 'Basic ' + [Convert]::ToBase
 
 ### Get Existing Azure users:
 $azureUsers = ""
-$Error.Clear()
+ $Error.Clear()
 try
 {
     $azureUsers = Invoke-RestMethod -Uri ($uriRestApi + "userentitlements?api-version=6.0-preview.3") -Method get -Headers $AzureDevOpsAuthenicationHeader
@@ -31,13 +31,13 @@ finally
 ### Main:
 foreach ($line in $csv) 
 { 
-        Switch ($line.Action)
-        {
+    Switch ($line.Action)
+    {
 #add user to azure
-            {$_ -in "a", "ad", "add"}
-            {
+        {$_ -in "a", "ad", "add"}
+        {
 #region - JSON Body of add user
-                $body= @"
+            $body= @"
 {
     "accessLevel": {
     "accountLicenseType": "$($line.'Group rule name')"
@@ -67,36 +67,36 @@ foreach ($line in $csv)
 "@
 #endregion         
 
-                 $Error.Clear()
-                try
-                {
-                    $response = Invoke-RestMethod -Uri ($uriRestApi + "userentitlements?api-version=6.1-preview.3") -Method get -Headers $AzureDevOpsAuthenicationHeader -Body $body
-                }
-                catch
-                {
-                    Write-Host $_.Exception
-                }
-                finally
-                {
-                    if(!$Error)
-                    {
-                        Write-Host ("User: " + $line.'Amadeus ID' + " added.")
-                    }
-                    else
-                    {
-                        Write-Host ("Adding user: " + $line.'Amadeus ID' + " failed.")
-                    }
-                }
-                break
+             $Error.Clear()
+            try
+            {
+                $response = Invoke-RestMethod -Uri ($uriRestApi + "userentitlements?api-version=6.1-preview.3") -Method get -Headers $AzureDevOpsAuthenicationHeader -Body $body
             }
+            catch
+            {
+                Write-Host $_.Exception
+            }
+            finally
+            {
+                if(!$Error)
+                {
+                    Write-Host ("User: " + $line.'Amadeus ID' + " added.")
+                }
+                else
+                {
+                    Write-Host ("Adding user: " + $line.'Amadeus ID' + " failed.")
+                }
+            }
+            break
+        }
 
 #update user in azure
-            {$_ -in "md", "mod", "modify"}
+        {$_ -in "md", "mod", "modify"}
+        {
+            foreach($user in $azureUsers.members)
             {
-                foreach($user in $azureUsers.members)
+                if( $user.user.mailAddress -eq $line.'Amadeus ID')
                 {
-                    if( $user.user.mailAddress -eq $line.'Amadeus ID')
-                    {
 #region - JSON Body of modify/update user
                     $body= @"
 [
@@ -128,61 +128,61 @@ foreach ($line in $csv)
 "@
 #endregion
 
-                         $Error.Clear()
-                        try
-                        {
-                            $response = Invoke-RestMethod -Uri ($uriRestApi + "userentitlements/$($user.id)?api-version=6.1-preview.3") -Method update -Headers $AzureDevOpsAuthenicationHeader -Body $body
-                        }
-                        catch
-                        {
-                            Write-Host $_.Exception
-                        }
-                        finally
-                        {
-                            if(!$Error)
-                            {
-                                Write-Host ("User: " + $line.'Amadeus ID' + " modified.")
-                            }
-                            else
-                            {
-                                Write-Host ("Modify user: " + $line.'Amadeus ID' + " failed.")
-                            }
-                        }                     
-                        break
-                    }
-                }
-            }
-
-#remove user from azure
-            {$_ -in "rm", "rem", "remove"}
-            {
-                foreach($user in $azureUsers.members)
-                {
-                    if( $user.user.mailAddress -eq $line.'Amadeus ID')
+                     $Error.Clear()
+                    try
                     {
-                         $Error.Clear()
-                        try
-                        {
-                            $response = Invoke-RestMethod -Uri ($uriRestApi + "userentitlements/$($user.id)api-version=6.1-preview.3") -Method Delete -Headers $AzureDevOpsAuthenicationHeader
-                        }
-                        catch
-                        {
-                            Write-Host $_.Exception
-                        }
-                        finally
-                        {
-                            if(!$Error)
-                            {
-                                Write-Host ("User: " + $line.'Amadeus ID' + " removed.")
-                            }
-                            else
-                            {
-                                Write-Host ("Removing user: " + $line.'Amadeus ID' + " failed.")
-                            }
-                        }
-                        break
+                        $response = Invoke-RestMethod -Uri ($uriRestApi + "userentitlements/$($user.id)?api-version=6.1-preview.3") -Method update -Headers $AzureDevOpsAuthenicationHeader -Body $body
                     }
+                    catch
+                    {
+                        Write-Host $_.Exception
+                    }
+                    finally
+                    {
+                        if(!$Error)
+                        {
+                            Write-Host ("User: " + $line.'Amadeus ID' + " modified.")
+                        }
+                    else
+                        {
+                            Write-Host ("Modify user: " + $line.'Amadeus ID' + " failed.")
+                        }
+                    }                     
+                    break
                 }
             }
         }
+
+#remove user from azure
+        {$_ -in "rm", "rem", "remove"}
+        {
+            foreach($user in $azureUsers.members)
+            {
+                if( $user.user.mailAddress -eq $line.'Amadeus ID')
+                {
+                     $Error.Clear()
+                    try
+                    {
+                        $response = Invoke-RestMethod -Uri ($uriRestApi + "userentitlements/$($user.id)api-version=6.1-preview.3") -Method Delete -Headers $AzureDevOpsAuthenicationHeader
+                    }
+                    catch
+                    {
+                        Write-Host $_.Exception
+                    }
+                    finally
+                    {
+                        if(!$Error)
+                        {
+                            Write-Host ("User: " + $line.'Amadeus ID' + " removed.")
+                        }
+                        else
+                        {
+                            Write-Host ("Removing user: " + $line.'Amadeus ID' + " failed.")
+                        }
+                    }
+                    break
+                }
+            }
+        }
+    }
 }
