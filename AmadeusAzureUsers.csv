@@ -1,0 +1,4 @@
+﻿Amadeus ID,Team,Group rule name,Action
+added.user@amadeus.com,DevOps,Stakeholder,add
+modifyed.user@amadeus.com,DevOps,Basic,md
+removed.user@amadeus.com,DevOps,Basic,rem
